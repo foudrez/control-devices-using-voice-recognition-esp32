@@ -1,0 +1,71 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: pink;
+    color: cyan;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.container {    
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #504C4C;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(255, 241, 241, 0.1);
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+label {
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+select {
+    padding: 5px;
+    font-size: 16px;
+}
+input{
+    max-width: 2500px;
+    margin: 50px auto;
+    padding: 10px;
+}
+button {
+    padding: 15px 30px;
+    border: none;
+    background-color: #33ffff;
+    color: green;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+button:active {
+    background-color: #ffffff;
+}
+
+#output {
+    margin-top: 20px;
+    text-align: left;
+}
+
+#transcript {
+    font-size: 18px;
+    color: #007bff;
+    white-space: pre-wrap;
+}
+
+.element{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+

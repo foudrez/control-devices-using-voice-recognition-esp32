@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Remote Command</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style> 
+        .prevent-select {
+          -webkit-user-select: none; /* Safari */
+          -ms-user-select: none; /* IE 10 and IE 11 */
+          user-select: none; /* Standard syntax */
+        }
+        .container {
+            text-align: center;
+            margin: 20px;
+        }
+        .control-buttons {
+            margin-top: 20px;
+        }
+        .control-buttons button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ESP32 Remote Commander</h1>
+
+        <!-- Language Selection -->
+        <div>
+            <label for="language-select">Chọn ngôn ngữ</label>
+            <select id="language-select">
+                <option value="en-US">Tiếng Tây -_-</option>
+                <option value="vi-VN">Tiếng Việt</option>
+            </select>
+        </div>
+
+        <!-- Hold-to-Speak Button -->
+        <button id="speak-btn" class="prevent-select">Giữ để nói</button>
+
+        <!-- Transcription Output -->
+        <div id="output">
+            <h3>Recognized Speech:</h3>
+            <p id="transcript">Hold the button to start speaking...</p>
+        </div>
+
+        <!-- Manual Control Buttons -->
+        <div class="control-buttons">
+            <h2>Manual LED Control</h2>
+            <button id="led-on-btn" class="control-btn">Turn On LED</button>
+            <button id="led-off-btn" class="control-btn">Turn Off LED</button>
+        </div>
+
+            <h1>ESP32 Remote Servo Player</h1>
+            <div class="control-buttons">
+                <h2>Servo Control</h2>
+                <input id="servo-degree" type="number" style="width: 50%;" placeholder="Enter degree (0-180)" min="0" max="180">
+                <button id="rotate-servo-btn" class="control-btn">Rotate Servo</button>
+        </div>
+
+        
+
+    <script>
+        // Speech Recognition
+        const speakBtn = document.getElementById('speak-btn');
+        const languageSelect = document.getElementById('language-select');
+        const transcriptDisplay = document.getElementById('transcript');
+        let recognition;
+        let isRecognizing = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false; // Stop after each speech segment
+
+            recognition.onresult = (event) => {
+                const currentTranscript = event.results[0][0].transcript;
+                transcriptDisplay.textContent = `Recognized: ${currentTranscript}`;
+                sendSpeechToServer(currentTranscript);
+            };
+
+            recognition.onerror = (event) => {
+                transcriptDisplay.textContent = `Error: ${event.error}`;
+            };
+
+            recognition.onend = () => {
+                isRecognizing = false;
+                speakBtn.textContent = 'Giữ để nói';
+            };
+        } else {
+            alert('Your browser does not support live speech recognition. Please use Chrome or Edge.');
+        }
+
+        const startListening = () => {
+            if (!isRecognizing) {
+                recognition.lang = languageSelect.value;
+                recognition.start();
+                isRecognizing = true;
+                speakBtn.textContent = 'Đang nghe........';
+                transcriptDisplay.textContent = 'Đang nghe........';
+            }
+        };
+
+        const stopListening = () => {
+            if (isRecognizing) {
+                recognition.stop();
+                isRecognizing = false;
+                speakBtn.textContent = 'Giữ để nói';
+            }
+        };
+
+        speakBtn.addEventListener('mousedown', startListening);
+        speakBtn.addEventListener('mouseup', stopListening);
+        speakBtn.addEventListener('mouseleave', stopListening);
+        speakBtn.addEventListener('touchstart', startListening, { passive: true });
+        speakBtn.addEventListener('touchend', stopListening, { passive: true });
+
+        const sendSpeechToServer = (speechText) => {
+            console.log(`Sending speech: ${speechText}`);
+            fetch('/process-speech', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ speech: speechText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Server Response:", data);
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error("Error sending speech to server:", error);
+            });
+        };
+
+        // Manual Control Buttons
+        const ledOnBtn = document.getElementById('led-on-btn');
+        const ledOffBtn = document.getElementById('led-off-btn');
+
+        const sendCommand = (command) => {
+            console.log(`Sending command: ${command}`);
+            fetch('/manual-control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Server Response:", data);
+            })
+            .catch(error => {
+                console.error("Error sending command to server:", error);
+            });
+        };
+
+        ledOnBtn.addEventListener('click', () => sendCommand("ON"));
+        ledOffBtn.addEventListener('click', () => sendCommand("OFF"));
+
+        const rotateServoBtn = document.getElementById('rotate-servo-btn');
+        const servoDegreeInput = document.getElementById('servo-degree');
+
+        rotateServoBtn.addEventListener('click', () => {
+            const degree = parseInt(servoDegreeInput.value, 10);
+            if (isNaN(degree) || degree < 0 || degree > 180) {
+                alert("Please enter a valid degree between 0 and 180.");
+                return;
+            }
+            sendCommand(`SERVO_${degree}`);
+        });
+
+        
+
+    </script>
+</body>
+</html>
