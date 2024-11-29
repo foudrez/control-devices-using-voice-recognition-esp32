@@ -1,0 +1,7 @@
+Tài liệu tham khảo
+-	https://randomnerdtutorials.com/ 
+-	https://chatgpt.com/
+-	forum.arduino.cc
+-	programmingelectronics.com
+-	https://cloud.google.com/speech-to-text/docs
+-	https://www.geeksforgeeks.org/
